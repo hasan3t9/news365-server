@@ -30,6 +30,19 @@ async function run() {
       res.send(categories);
     });
 
+    app.get("/all-news/:id", async (req, res) => {
+      const id = req.params.id; 
+
+      try {
+        const result = await newsCollection.find({id: id }).toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching category news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });  
+
     app.get("/news-per-category", async (req, res) => {
       const categoryIds = [2, 3, 4, 5];
       const result = [];
@@ -50,7 +63,8 @@ async function run() {
       const categoryId = 6;
       try {
         const result = await newsCollection
-          .find({ category_id: categoryId }).limit(6)
+          .find({ category_id: categoryId })
+          .limit(6)
           .toArray();
 
         res.send(result);
@@ -63,7 +77,8 @@ async function run() {
       const categoryId = 8;
       try {
         const result = await newsCollection
-          .find({ category_id: categoryId }).limit(6)
+          .find({ category_id: categoryId })
+          .limit(6)
           .toArray();
 
         res.send(result);
@@ -88,6 +103,140 @@ async function run() {
     });
     app.get("/science", async (req, res) => {
       const categoryId = 7;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+
+    // category all news
+    app.get("/breaking-news", async (req, res) => {
+      try {
+        const result = await newsCollection
+          .find({
+            "others.is_today_pick": true,
+          })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+
+    app.get("/all-business-news", async (req, res) => {
+      const categoryId = 2;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-tech-news", async (req, res) => {
+      const categoryId = 3;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-health-news", async (req, res) => {
+      const categoryId = 4;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-sport-news", async (req, res) => {
+      const categoryId = 5;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-entertain-news", async (req, res) => {
+      const categoryId = 6;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-science-news", async (req, res) => {
+      const categoryId = 7;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-politics-news", async (req, res) => {
+      const categoryId = 8;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-education-news", async (req, res) => {
+      const categoryId = 9;
+      try {
+        const result = await newsCollection
+          .find({ category_id: categoryId })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching entertainment news:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+    app.get("/all-lifestyle-news", async (req, res) => {
+      const categoryId = 10;
       try {
         const result = await newsCollection
           .find({ category_id: categoryId })
