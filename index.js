@@ -23,7 +23,38 @@ async function run() {
   try {
     const db = client.db("news365-db");
     const newsCollection = db.collection("news");
+    const usersCollection = db.collection("users");
     const newsCategoriesCollection = db.collection("newsCategories");
+
+    app.post("/all-news", async (req, res) => {
+      try {
+        const data = req.body;
+        if (
+          !data.id ||
+          data.category_id === undefined ||
+          !data.title ||
+          !data.details ||
+          !data.category_name
+        ) {
+          return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        data.category_id = Number(data.category_id);
+        data.total_view = Number(data.total_view) || 0;
+        data.rating = {
+          number: (data.rating && Number(data.rating.number)) || 0,
+          badge: (data.rating && data.rating.badge) || "",
+        };
+       
+        const result = await newsCollection.insertOne(data);
+
+        // Send back the inserted data (maybe with insertedId)
+        res.send(result)
+      } catch (error) {
+        console.error("Error creating news:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
 
     app.get("/all-news", async (req, res) => {
       const categories = await newsCollection.find().toArray();
@@ -31,17 +62,17 @@ async function run() {
     });
 
     app.get("/all-news/:id", async (req, res) => {
-      const id = req.params.id; 
+      const id = req.params.id;
 
       try {
-        const result = await newsCollection.find({id: id }).toArray();
+        const result = await newsCollection.find({ id: id }).toArray();
 
         res.send(result);
       } catch (error) {
         console.error("Error fetching category news:", error);
         res.status(500).send({ message: "Internal Server Error" });
       }
-    });  
+    });
 
     app.get("/news-per-category", async (req, res) => {
       const categoryIds = [2, 3, 4, 5];
@@ -247,6 +278,47 @@ async function run() {
         console.error("Error fetching entertainment news:", error);
         res.status(500).send({ message: "Internal Server Error" });
       }
+    });
+
+    // ---------------------------------------------------------------users -------------------------------\
+
+    app.post("/users", async (req, res) => {
+      try {
+        const user = req.body;
+        if (!user.uid || !user.email || !user.name) {
+          return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Check if user already exists by Firebase UID or email
+        const existingUser = await usersCollection.findOne({
+          $or: [{ uid: user.uid }, { email: user.email }],
+        });
+        if (existingUser) {
+          return res.status(409).json({ message: "User already exists" });
+        }
+
+        // Insert user document
+        const result = await usersCollection.insertOne(user);
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error adding user:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+    app.get("/users/:email/role", async (req, res) => {
+      const email = req.params.email;
+
+      const user = await usersCollection.findOne({ email });
+
+      if (!user) {
+        return res
+          .status(404)
+          .send({ message: "User not found", role: "user" });
+      }
+
+      res.send({ role: user.role || "user" });
     });
 
     app.get("/categories", async (req, res) => {
