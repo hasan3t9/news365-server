@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const cors = require("cors");
 app.use(cors());
@@ -45,11 +45,11 @@ async function run() {
           number: (data.rating && Number(data.rating.number)) || 0,
           badge: (data.rating && data.rating.badge) || "",
         };
-       
+
         const result = await newsCollection.insertOne(data);
 
         // Send back the inserted data (maybe with insertedId)
-        res.send(result)
+        res.send(result);
       } catch (error) {
         console.error("Error creating news:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -57,7 +57,10 @@ async function run() {
     });
 
     app.get("/all-news", async (req, res) => {
-      const categories = await newsCollection.find().toArray();
+      const categories = await newsCollection
+        .find()
+        .sort({ category_id: 1 })
+        .toArray();
       res.send(categories);
     });
 
@@ -74,6 +77,24 @@ async function run() {
       }
     });
 
+    app.delete("/news/:id", async (req, res) => {
+      const id = req.params.id;
+
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+      }
+
+      const result = await newsCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      res.json(result);
+    });
+
     app.get("/news-per-category", async (req, res) => {
       const categoryIds = [2, 3, 4, 5];
       const result = [];
@@ -88,6 +109,41 @@ async function run() {
       }
 
       res.send(result);
+    });
+
+    app.put("/update-news/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = { ...req.body };
+
+      if (!id) return res.status(400).send({ message: "Missing id parameter" });
+
+      // Remove _id if present in updatedData to avoid MongoDB error
+      if ("_id" in updatedData) {
+        delete updatedData._id;
+      }
+
+      try {
+        const filter = { id: id };
+
+        const existingDoc = await newsCollection.findOne(filter);
+        if (!existingDoc)
+          return res.status(404).send({ message: "Post not found" });
+
+        const result = await newsCollection.updateOne(filter, {
+          $set: updatedData,
+        });
+
+        return res.status(200).send({
+          message:
+            result.modifiedCount > 0
+              ? "Post updated successfully"
+              : "No changes detected",
+          modifiedCount: result.modifiedCount,
+        });
+      } catch (error) {
+        console.error("Update Error:", error);
+        return res.status(500).send({ message: error.message });
+      }
     });
 
     app.get("/entertainment", async (req, res) => {
@@ -321,8 +377,75 @@ async function run() {
       res.send({ role: user.role || "user" });
     });
 
+    // dashboard collection
+
+    app.get("/dashboard-stats", async (req, res) => {
+      try {
+        const totalPosts = await newsCollection.countDocuments();
+
+        // Example additional stats (replace with your actual logic)
+        const totalTrending = await newsCollection.countDocuments({
+          "others.is_trending": true,
+        });
+        const totalTodayPick = await newsCollection.countDocuments({
+          "others.is_today_pick": true,
+        });
+
+        const viewsAggregation = await newsCollection
+          .aggregate([
+            {
+              $group: {
+                _id: null,
+                totalViews: { $sum: "$total_view" },
+              },
+            },
+          ])
+          .toArray();
+
+        const totalViews = viewsAggregation[0]?.totalViews || 0;
+        const totalUsers = await usersCollection.countDocuments();
+
+        res.status(200).json({
+          totalPosts,
+          totalTrending,
+          totalTodayPick,
+          totalViews,
+          totalUsers,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+    // app.get("/dashboard-stats", async (req, res) => {
+    //   try {
+    //     const totalPosts = await newsCollection.countDocuments();
+    //     const totalUsers = await usersCollection.countDocuments();
+    //     const totalViewsAggregate = await newsCollection
+    //       .aggregate([
+    //         { $group: { _id: null, totalViews: { $sum: "$total_view" } } },
+    //       ])
+    //       .toArray();
+
+    //     const totalViews = totalViewsAggregate[0]?.totalViews || 0;
+
+    //     res.json({
+    //       totalPosts,
+    //       totalUsers,
+    //       totalViews,
+    //     });
+    //   } catch (error) {
+    //     console.error("Failed to fetch dashboard stats", error);
+    //     res.status(500).json({ message: "Failed to fetch stats" });
+    //   }
+    // });
+
     app.get("/categories", async (req, res) => {
-      const categories = await newsCategoriesCollection.find().toArray();
+      const categories = await newsCategoriesCollection
+        .find()
+        .sort({ id: 1 })
+        .toArray();
       res.send(categories);
     });
 
