@@ -23,6 +23,7 @@ async function run() {
   try {
     const db = client.db("news365-db");
     const newsCollection = db.collection("news");
+    const news365Collection = db.collection("news365");
     const usersCollection = db.collection("users");
     const newsCategoriesCollection = db.collection("newsCategories");
 
@@ -55,7 +56,37 @@ async function run() {
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    app.post("/all-news365", async (req, res) => {
+      const data = req.body;
+      const result = await news365Collection.insertOne({
+        ...data,
+        createdAt: new Date(),
+      });
+      res.send(result);
+    });
 
+    app.get("/all-news365/h1c1", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          categoryPosition: "1",
+          homePosition: "1",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h1c2", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "1",
+          categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
     app.get("/all-news", async (req, res) => {
       const categories = await newsCollection
         .find()
