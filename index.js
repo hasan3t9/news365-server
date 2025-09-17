@@ -65,6 +65,14 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/all-news365", async (req, res) => {
+      const categories = await news365Collection
+        .find({})
+        .sort({ _id: -1 })
+
+        .toArray();
+      res.send(categories);
+    });
     app.get("/all-news365/h1c1", async (req, res) => {
       const categories = await news365Collection
         .find({
@@ -81,6 +89,294 @@ async function run() {
         .find({
           homePosition: "1",
           categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h1c3", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "1",
+          categoryPosition: "3",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h1c4", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "1",
+          categoryPosition: "4",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c1", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "1",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c2", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c3", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "3",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c4", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "4",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c5", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "5",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h2c6", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "2",
+          categoryPosition: "6",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h3c1", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "1",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+
+    app.get("/all-news365/h3c2", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h3c3", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "3",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h3c4", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "4",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h3c5", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "5",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+
+    app.get("/all-news365/h3c6", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "3",
+          categoryPosition: "6",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c1", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "1",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c2", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c3", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "3",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c4", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "4",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c5", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "5",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h4c6", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "4",
+          categoryPosition: "6",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c1", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "1",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c2", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "2",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c3", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "3",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c4", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "4",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c5", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "5",
+        })
+        .sort({ _id: -1 })
+        .limit(1)
+        .toArray();
+      res.send(categories);
+    });
+    app.get("/all-news365/h5c6", async (req, res) => {
+      const categories = await news365Collection
+        .find({
+          homePosition: "5",
+          categoryPosition: "6",
         })
         .sort({ _id: -1 })
         .limit(1)
@@ -224,6 +520,7 @@ async function run() {
       try {
         const result = await newsCollection
           .find({ category_id: categoryId })
+          .limit(6)
           .toArray();
 
         res.send(result);
