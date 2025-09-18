@@ -391,15 +391,20 @@ async function run() {
       res.send(categories);
     });
 
-    app.get("/all-news/:id", async (req, res) => {
+    app.get("/all-news365/:id", async (req, res) => {
       const id = req.params.id;
 
       try {
-        const result = await newsCollection.find({ id: id }).toArray();
+        const result = await news365Collection.findOne({
+          _id: new ObjectId(id),
+        });
 
+        if (!result) {
+          return res.status(404).send({ message: "News not found" });
+        }
         res.send(result);
       } catch (error) {
-        console.error("Error fetching category news:", error);
+        console.error("Error fetching single news:", error);
         res.status(500).send({ message: "Internal Server Error" });
       }
     });
@@ -438,105 +443,135 @@ async function run() {
       res.send(result);
     });
 
+    // app.put("/updatesss-news/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const updatedData = { ...req.body };
+
+    //   if (!id) return res.status(400).send({ message: "Missing id parameter" });
+
+    //   // Remove _id if present in updatedData to avoid MongoDB error
+    //   if ("_id" in updatedData) {
+    //     delete updatedData._id;
+    //   }
+
+    //   try {
+    //     const filter = { id: id };
+
+    //     const existingDoc = await newsCollection.findOne(filter);
+    //     if (!existingDoc)
+    //       return res.status(404).send({ message: "Post not found" });
+
+    //     const result = await newsCollection.updateOne(filter, {
+    //       $set: updatedData,
+    //     });
+
+    //     return res.status(200).send({
+    //       message:
+    //         result.modifiedCount > 0
+    //           ? "Post updated successfully"
+    //           : "No changes detected",
+    //       modifiedCount: result.modifiedCount,
+    //     });
+    //   } catch (error) {
+    //     console.error("Update Error:", error);
+    //     return res.status(500).send({ message: error.message });
+    //   }
+    // });
+
     app.put("/update-news/:id", async (req, res) => {
-      const id = req.params.id;
-      const updatedData = { ...req.body };
-
-      if (!id) return res.status(400).send({ message: "Missing id parameter" });
-
-      // Remove _id if present in updatedData to avoid MongoDB error
-      if ("_id" in updatedData) {
-        delete updatedData._id;
-      }
-
       try {
-        const filter = { id: id };
+        const { id } = req.params;
+        const updatedData = req.body;
 
-        const existingDoc = await newsCollection.findOne(filter);
-        if (!existingDoc)
-          return res.status(404).send({ message: "Post not found" });
+        if (updatedData._id) {
+          delete updatedData._id;
+        }
 
-        const result = await newsCollection.updateOne(filter, {
-          $set: updatedData,
-        });
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = { $set: updatedData };
 
-        return res.status(200).send({
-          message:
-            result.modifiedCount > 0
-              ? "Post updated successfully"
-              : "No changes detected",
-          modifiedCount: result.modifiedCount,
-        });
+        const result = await news365Collection.updateOne(filter, updateDoc);
+
+        if (result.matchedCount === 0) {
+          return res
+            .status(404)
+            .send({ success: false, message: "Post not found" });
+        }
+
+        res.send({ success: true, message: "Post updated successfully" });
       } catch (error) {
         console.error("Update Error:", error);
-        return res.status(500).send({ message: error.message });
+        res
+          .status(500)
+          .send({ success: false, error: "Internal Server Error" });
       }
     });
 
-    app.get("/entertainment", async (req, res) => {
-      const categoryId = 6;
-      try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
-          .limit(6)
-          .toArray();
+    // app.get("/entertainment", async (req, res) => {
+    //   const categoryId = 6;
+    //   try {
+    //     const result = await newsCollection
+    //       .find({ category_id: categoryId })
+    //       .limit(6)
+    //       .toArray();
 
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching entertainment news:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
-    });
-    app.get("/politics", async (req, res) => {
-      const categoryId = 8;
-      try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
-          .limit(6)
-          .toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error fetching entertainment news:", error);
+    //     res.status(500).send({ message: "Internal Server Error" });
+    //   }
+    // });
+    // app.get("/politics", async (req, res) => {
+    //   const categoryId = 8;
+    //   try {
+    //     const result = await newsCollection
+    //       .find({ category_id: categoryId })
+    //       .limit(6)
+    //       .toArray();
 
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching entertainment news:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
-    });
-    app.get("/business", async (req, res) => {
-      const categoryId = 2;
-      try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
-          .limit(6)
-          .toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error fetching entertainment news:", error);
+    //     res.status(500).send({ message: "Internal Server Error" });
+    //   }
+    // });
+    // app.get("/business", async (req, res) => {
+    //   const categoryId = 2;
+    //   try {
+    //     const result = await newsCollection
+    //       .find({ category_id: categoryId })
+    //       .limit(6)
+    //       .toArray();
 
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching entertainment news:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
-    });
-    app.get("/science", async (req, res) => {
-      const categoryId = 7;
-      try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
-          .limit(6)
-          .toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error fetching entertainment news:", error);
+    //     res.status(500).send({ message: "Internal Server Error" });
+    //   }
+    // });
+    // app.get("/science", async (req, res) => {
+    //   const categoryId = 7;
+    //   try {
+    //     const result = await newsCollection
+    //       .find({ category_id: categoryId })
+    //       .limit(6)
+    //       .toArray();
 
-        res.send(result);
-      } catch (error) {
-        console.error("Error fetching entertainment news:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
-    });
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error fetching entertainment news:", error);
+    //     res.status(500).send({ message: "Internal Server Error" });
+    //   }
+    // });
 
     // category all news
     app.get("/breaking-news", async (req, res) => {
       try {
-        const result = await newsCollection
+        const result = await news365Collection
           .find({
-            "others.is_today_pick": true,
+            "post.breakingPost": true,
           })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -547,10 +582,10 @@ async function run() {
     });
 
     app.get("/all-business-news", async (req, res) => {
-      const categoryId = 2;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Business" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -560,10 +595,10 @@ async function run() {
       }
     });
     app.get("/all-tech-news", async (req, res) => {
-      const categoryId = 3;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Technology" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -573,10 +608,10 @@ async function run() {
       }
     });
     app.get("/all-health-news", async (req, res) => {
-      const categoryId = 4;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Health" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -586,10 +621,10 @@ async function run() {
       }
     });
     app.get("/all-sport-news", async (req, res) => {
-      const categoryId = 5;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Sports" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -599,10 +634,10 @@ async function run() {
       }
     });
     app.get("/all-entertain-news", async (req, res) => {
-      const categoryId = 6;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Entertainment" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -612,10 +647,10 @@ async function run() {
       }
     });
     app.get("/all-science-news", async (req, res) => {
-      const categoryId = 7;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Science" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -625,10 +660,10 @@ async function run() {
       }
     });
     app.get("/all-politics-news", async (req, res) => {
-      const categoryId = 8;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Politics" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -638,10 +673,10 @@ async function run() {
       }
     });
     app.get("/all-education-news", async (req, res) => {
-      const categoryId = 9;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Education" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -651,10 +686,10 @@ async function run() {
       }
     });
     app.get("/all-lifestyle-news", async (req, res) => {
-      const categoryId = 10;
       try {
-        const result = await newsCollection
-          .find({ category_id: categoryId })
+        const result = await news365Collection
+          .find({ category: "Lifestyle" })
+          .sort({ _id: -1 })
           .toArray();
 
         res.send(result);
@@ -709,7 +744,7 @@ async function run() {
 
     app.get("/dashboard-stats", async (req, res) => {
       try {
-        const totalPosts = await newsCollection.countDocuments();
+        const totalPosts = await news365Collection.countDocuments();
 
         // Example additional stats (replace with your actual logic)
         const totalTrending = await newsCollection.countDocuments({
@@ -719,17 +754,7 @@ async function run() {
           "others.is_today_pick": true,
         });
 
-        const viewsAggregation = await newsCollection
-          .aggregate([
-            {
-              $group: {
-                _id: null,
-                totalViews: { $sum: "$total_view" },
-              },
-            },
-          ])
-          .toArray();
-
+        
         const totalViews = viewsAggregation[0]?.totalViews || 0;
         const totalUsers = await usersCollection.countDocuments();
 
