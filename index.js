@@ -2,10 +2,33 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const cors = require("cors");
+const multer = require("multer");
+const sharp = require("sharp");
+const fs = require("fs");
+const path = require("path");
 app.use(cors());
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
+
+app.use("/uploads", express.static("uploads"));
+
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Storage config for Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
 
 const uri =
   "mongodb+srv://news365-db:VvvYR1k1YEaYqwka@cluster0.qycon3j.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
@@ -26,6 +49,62 @@ async function run() {
     const news365Collection = db.collection("news365");
     const usersCollection = db.collection("users");
     const newsCategoriesCollection = db.collection("newsCategories");
+    const imagesCollection = db.collection("images");
+    const reportersCollection = db.collection("reporters");
+
+    // ----------------------------image upload and get-------------------------
+    app.post("/upload", upload.single("image"), async (req, res) => {
+      try {
+        const filePath = req.file.path;
+        const fileName = req.file.filename;
+        const outputDir = "uploads/";
+
+        // Resize Thumb
+        await sharp(filePath)
+          .resize(438, 240)
+          .toFile(path.join(outputDir, "thumb-" + fileName));
+        // Resize Large
+        await sharp(filePath)
+          .resize(1067, 585)
+          .toFile(path.join(outputDir, "large-" + fileName));
+
+        // Save to DB
+        const doc = {
+          filename: fileName,
+          caption: req.body.caption || "",
+          reference: req.body.reference || "",
+          urls: {
+            original: `/uploads/${fileName}`,
+            thumb: `/uploads/thumb-${fileName}`,
+            large: `/uploads/large-${fileName}`,
+          },
+          createdAt: new Date(),
+        };
+
+        await imagesCollection.insertOne(doc);
+
+        res.json({
+          success: true,
+          message: "Image uploaded & saved to DB",
+          doc,
+        });
+      } catch (err) {
+        console.error("Upload error:", err);
+        res.status(500).json({ success: false, error: err.message });
+      }
+    });
+
+    app.get("/images", async (req, res) => {
+      try {
+        const result = await imagesCollection
+          .find()
+          .sort({ createdAt: -1 })
+          .toArray();
+        res.json(result);
+      } catch (err) {
+        res.status(500).json({ error: "Failed to fetch images" });
+      }
+    });
 
     app.post("/all-news", async (req, res) => {
       try {
@@ -636,7 +715,7 @@ async function run() {
     app.get("/all-entertain-news", async (req, res) => {
       try {
         const result = await news365Collection
-          .find({ category: "Entertainment" })
+          .find({ category: "Fun" })
           .sort({ _id: -1 })
           .toArray();
 
@@ -754,7 +833,6 @@ async function run() {
           "others.is_today_pick": true,
         });
 
-        
         const totalViews = viewsAggregation[0]?.totalViews || 0;
         const totalUsers = await usersCollection.countDocuments();
 
@@ -771,28 +849,60 @@ async function run() {
       }
     });
 
-    // app.get("/dashboard-stats", async (req, res) => {
-    //   try {
-    //     const totalPosts = await newsCollection.countDocuments();
-    //     const totalUsers = await usersCollection.countDocuments();
-    //     const totalViewsAggregate = await newsCollection
-    //       .aggregate([
-    //         { $group: { _id: null, totalViews: { $sum: "$total_view" } } },
-    //       ])
-    //       .toArray();
+    // -------------------------------Reporters ------------------
+    // reporters API
+    app.post("/reporters", upload.single("image"), async (req, res) => {
+      try {
+        if (!req.file) {
+          return res
+            .status(400)
+            .json({ success: false, message: "No file uploaded" });
+        }
 
-    //     const totalViews = totalViewsAggregate[0]?.totalViews || 0;
+        const filePath = req.file.path;
+        const fileName = req.file.filename;
+        const outputDir = "uploads/";
 
-    //     res.json({
-    //       totalPosts,
-    //       totalUsers,
-    //       totalViews,
-    //     });
-    //   } catch (error) {
-    //     console.error("Failed to fetch dashboard stats", error);
-    //     res.status(500).json({ message: "Failed to fetch stats" });
-    //   }
-    // });
+        // Resize (200x200)
+        await sharp(filePath)
+          .resize(200, 200)
+          .toFile(path.join(outputDir, "reporter-" + fileName));
+
+        // Reporter document
+        const doc = {
+          email: req.body.email,
+          reporterName: req.body.reporterName,
+          designationName: req.body.designationName,
+          image: {
+            original: `/uploads/${fileName}`,
+          },
+          createdAt: new Date(),
+        };
+
+        await reportersCollection.insertOne(doc);
+
+        res.json({
+          success: true,
+          message: "Reporter added successfully",
+          reporter: doc,
+        });
+      } catch (err) {
+        console.error("Reporter upload error:", err);
+        res.status(500).json({ success: false, error: err.message });
+      }
+    });
+
+    app.get("/reporters", async (req, res) => {
+      try {
+        const reporters = await reportersCollection
+          .find()
+          .sort({ createdAt: -1 })
+          .toArray();
+        res.send(reporters);
+      } catch (err) {
+        res.status(500).json({ error: "Failed to fetch reporters" });
+      }
+    });
 
     app.get("/categories", async (req, res) => {
       const categories = await newsCategoriesCollection
