@@ -472,7 +472,6 @@ async function run() {
 
     app.get("/all-news365/:id", async (req, res) => {
       const id = req.params.id;
-
       try {
         const result = await news365Collection.findOne({
           _id: new ObjectId(id),
@@ -488,14 +487,14 @@ async function run() {
       }
     });
 
-    app.delete("/news/:id", async (req, res) => {
+    app.delete("/all-news365/:id", async (req, res) => {
       const id = req.params.id;
 
       if (!ObjectId.isValid(id)) {
         return res.status(400).json({ message: "Invalid ID format" });
       }
 
-      const result = await newsCollection.deleteOne({
+      const result = await news365Collection.deleteOne({
         _id: new ObjectId(id),
       });
 
